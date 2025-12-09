@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://api.workpulse.us';
 const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
@@ -12,7 +13,8 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            const newSocket = io(`http://${window.location.hostname}:3000`, {
+            console.log("Initializing Socket connection to:", BASE_URL);
+            const newSocket = io(`${BASE_URL}`, {
                 query: { userId: user.id }
             });
             setSocket(newSocket);
