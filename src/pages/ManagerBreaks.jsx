@@ -3,6 +3,8 @@ import api from '../api/axios';
 import Modal from '../components/Modal';
 import { Plus, Trash2, Edit } from 'lucide-react';
 import LoadingComponent from '../components/LoadingComponent';
+import NotificationToast from '../components/NotificationToast';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const ManagerBreaks = () => {
     const [breaks, setBreaks] = useState([]);
@@ -12,6 +14,14 @@ const ManagerBreaks = () => {
     const [durationSplit, setDurationSplit] = useState({ minutes: 10, seconds: 0 });
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState({ message: '', type: 'success', isOpen: false });
+    const [confirmation, setConfirmation] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'warning',
+        onConfirm: () => { }
+    });
 
     useEffect(() => {
         fetchBreaks();
@@ -47,21 +57,46 @@ const ManagerBreaks = () => {
             setDurationSplit({ minutes: 10, seconds: 0 });
             setEditingId(null);
             fetchBreaks();
+            setToast({
+                isOpen: true,
+                message: editingId ? 'Break type updated successfully' : 'Break type added successfully',
+                type: 'success'
+            });
         } catch (error) {
-            alert('Failed to save break type');
+            setToast({
+                isOpen: true,
+                message: 'Failed to save break type',
+                type: 'error'
+            });
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this break type?')) {
-            try {
-                await api.delete(`/breaks/types/${id}`);
-                fetchBreaks();
-            } catch (error) {
-                console.error(error);
-                alert('Failed to delete break type');
+    const handleDelete = (id) => {
+        setConfirmation({
+            isOpen: true,
+            title: 'Delete Break Type',
+            message: 'Are you sure you want to delete this break type? This action cannot be undone.',
+            type: 'danger',
+            confirmText: 'Delete',
+            onConfirm: async () => {
+                try {
+                    await api.delete(`/breaks/types/${id}`);
+                    setToast({
+                        isOpen: true,
+                        message: 'Break type deleted successfully',
+                        type: 'success'
+                    });
+                    fetchBreaks();
+                } catch (error) {
+                    console.error(error);
+                    setToast({
+                        isOpen: true,
+                        message: 'Failed to delete break type',
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
     const openEditModal = (breakType) => {
@@ -241,6 +276,25 @@ const ManagerBreaks = () => {
                     </button>
                 </form>
             </Modal>
+
+            {toast.isOpen && (
+                <NotificationToast
+                    message={toast.message}
+                    type={toast.type}
+                    duration={3000}
+                    onClose={() => setToast({ ...toast, isOpen: false })}
+                />
+            )}
+
+            <ConfirmationModal
+                isOpen={confirmation.isOpen}
+                onClose={() => setConfirmation({ ...confirmation, isOpen: false })}
+                onConfirm={confirmation.onConfirm}
+                title={confirmation.title}
+                message={confirmation.message}
+                type={confirmation.type}
+                confirmText={confirmation.confirmText}
+            />
         </div >
     );
 

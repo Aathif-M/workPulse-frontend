@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import html2pdf from 'html2pdf.js';
 import LoadingComponent from '../components/LoadingComponent';
+import LoadingComponent from '../components/LoadingComponent';
 import CustomSelect from '../components/CustomSelect';
+import NotificationToast from '../components/NotificationToast';
 
 const ManagerHistory = () => {
     const [history, setHistory] = useState([]);
@@ -21,6 +23,7 @@ const ManagerHistory = () => {
     const [customEndDate, setCustomEndDate] = useState('');
     const [searchAgent, setSearchAgent] = useState('');
     const [expandedRow, setExpandedRow] = useState(null);
+    const [toast, setToast] = useState({ message: '', type: 'success', isOpen: false });
 
     useEffect(() => {
         fetchAllData();
@@ -171,7 +174,11 @@ const ManagerHistory = () => {
 
     const exportToPDF = () => {
         if (filteredData.length === 0) {
-            alert('No data to export');
+            setToast({
+                isOpen: true,
+                message: 'No data to export',
+                type: 'error'
+            });
             return;
         }
 
@@ -835,6 +842,14 @@ const ManagerHistory = () => {
                     </div>
                 </div>
             </div>
+            {toast.isOpen && (
+                <NotificationToast
+                    message={toast.message}
+                    type={toast.type}
+                    duration={3000}
+                    onClose={() => setToast({ ...toast, isOpen: false })}
+                />
+            )}
         </div>
     );
 };

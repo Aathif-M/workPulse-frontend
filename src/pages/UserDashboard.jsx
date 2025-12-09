@@ -6,6 +6,8 @@ import Timer from '../components/Timer';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import Layout from '../components/Layout';
 import LoadingComponent from '../components/LoadingComponent';
+import NotificationToast from '../components/NotificationToast';
+import { Coffee, Utensils, Zap, Clock, PlayCircle } from 'lucide-react';
 
 const UserDashboard = () => {
     const { user, logout } = useAuth();
@@ -15,6 +17,7 @@ const UserDashboard = () => {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [toast, setToast] = useState({ message: '', type: 'success', isOpen: false });
 
     useEffect(() => {
         if (user?.mustChangePassword) {
@@ -50,7 +53,11 @@ const UserDashboard = () => {
             setCurrentSession(res.data);
             fetchData(); // Refresh history
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to start break');
+            setToast({
+                isOpen: true,
+                message: error.response?.data?.message || 'Failed to start break',
+                type: 'error'
+            });
         }
     };
 
@@ -64,7 +71,11 @@ const UserDashboard = () => {
         } catch (error) {
             console.error(error);
             setCurrentSession(previousSession); // Revert on failure
-            alert("Failed to end break. Please try again.");
+            setToast({
+                isOpen: true,
+                message: "Failed to end break. Please try again.",
+                type: 'error'
+            });
         }
     };
 
@@ -130,18 +141,45 @@ const UserDashboard = () => {
                         </div>
                     ) : (
                         <div>
-                            <p className="text-gray-600 mb-4">Select a break type to start:</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                                {breakTypes.map(type => (
-                                    <button
-                                        key={type.id}
-                                        onClick={() => startBreak(type.id)}
-                                        className="p-4 border-2 border-blue-100 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition text-center"
-                                    >
-                                        <h4 className="font-bold text-blue-900">{type.name}</h4>
-                                        <p className="text-sm text-gray-500">{type.duration / 60} mins</p>
-                                    </button>
-                                ))}
+                            <p className="text-gray-600 mb-4 font-medium">Select a break type to start:</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                {breakTypes.map(type => {
+                                    const getIcon = (name) => {
+                                        const lower = name.toLowerCase();
+                                        if (lower.includes('lunch') || lower.includes('dinner') || lower.includes('food')) return <Utensils size={32} className="text-orange-500" />;
+                                        if (lower.includes('tea') || lower.includes('coffee')) return <Coffee size={32} className="text-amber-700" />;
+                                        if (lower.includes('short') || lower.includes('bio')) return <Zap size={32} className="text-yellow-500" />;
+                                        return <Clock size={32} className="text-blue-500" />;
+                                    };
+
+                                    return (
+                                        <button
+                                            key={type.id}
+                                            onClick={() => startBreak(type.id)}
+                                            className="group relative bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 text-left overflow-hidden"
+                                        >
+                                            <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                <PlayCircle className="text-blue-600" size={24} />
+                                            </div>
+
+                                            <div className="mb-4 p-3 bg-gray-50 rounded-full w-fit group-hover:bg-blue-50 transition-colors">
+                                                {getIcon(type.name)}
+                                            </div>
+
+                                            <h4 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-800 transition-colors">
+                                                {type.name}
+                                            </h4>
+
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                                    {Math.floor(type.duration / 60)} mins
+                                                </span>
+                                            </div>
+
+                                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
@@ -193,6 +231,15 @@ const UserDashboard = () => {
                     setIsChangePasswordOpen(false);
                 }}
             />
+
+            {toast.isOpen && (
+                <NotificationToast
+                    message={toast.message}
+                    type={toast.type}
+                    duration={3000}
+                    onClose={() => setToast({ ...toast, isOpen: false })}
+                />
+            )}
         </Layout>
     );
 };
