@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import html2pdf from 'html2pdf.js';
 import LoadingComponent from '../components/LoadingComponent';
-import LoadingComponent from '../components/LoadingComponent';
+
 import CustomSelect from '../components/CustomSelect';
 import NotificationToast from '../components/NotificationToast';
 
