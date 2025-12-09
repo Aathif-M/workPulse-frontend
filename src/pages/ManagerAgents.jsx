@@ -304,6 +304,7 @@ const ManagerAgents = () => {
                 <NotificationToast
                     message={toast.message}
                     type={toast.type}
+                    duration={3000}
                     onClose={() => setToast({ ...toast, isOpen: false })}
                 />
             )}
