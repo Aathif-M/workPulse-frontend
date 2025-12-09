@@ -93,6 +93,14 @@ const UserDashboard = () => {
             >
                 History
             </button>
+            {user.role === 'ADMIN' && (
+                <button
+                    onClick={() => navigate('/manager')}
+                    className="block w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
+                >
+                    Manager Dashboard
+                </button>
+            )}
         </>
     );
 
