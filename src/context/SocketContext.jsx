@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            console.log("Initializing Socket connection to:", BASE_URL);
+            // console.log("Initializing Socket connection to:", BASE_URL);
             const newSocket = io(`${BASE_URL}`, {
                 query: { userId: user.id }
             });

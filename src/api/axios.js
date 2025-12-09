@@ -3,7 +3,7 @@ import axios from 'axios';
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://api.workpulse.us';
 
 const api = axios.create({
-    baseURL: BASE_URL,
+    baseURL: `${BASE_URL}/api`,
 });
 
 api.interceptors.request.use((config) => {
