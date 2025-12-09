@@ -9,7 +9,7 @@ import Layout from '../components/Layout';
 import LoadingComponent from '../components/LoadingComponent';
 
 const ManagerDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const location = useLocation();
 
     // Check if we are on the main dashboard page (not a sub-route)
@@ -72,7 +72,7 @@ const DashboardContent = () => {
     const fetchAgents = async () => {
         try {
             const res = await api.get('/users');
-            // console.log(res.data);
+
             setAgents(res.data);
             setLoading(false);
         } catch (error) {

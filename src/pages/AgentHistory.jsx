@@ -7,7 +7,7 @@ import LoadingComponent from '../components/LoadingComponent';
 import CustomSelect from '../components/CustomSelect';
 
 const AgentHistory = () => {
-    const { user, logout } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const [breakHistory, setBreakHistory] = useState([]);
     const [loading, setLoading] = useState(true);

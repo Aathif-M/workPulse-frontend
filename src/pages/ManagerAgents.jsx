@@ -137,17 +137,7 @@ const ManagerAgents = () => {
     const handleEdit = (agent) => {
         setFormData({ name: agent.name, email: agent.email, role: agent.role });
         setEditingId(agent.id);
-        // Pre-select breaks. If allowedBreaks is empty, user might have ALL or NONE. 
-        // Logic: if allowedBreaks has items, use them. If empty, check if legacy? 
-        // Requirement: Assign or retain break types. 
-        // If agent.allowedBreaks is undefined/empty, maybe default to ALL?
-        // But backend `getBreakTypes` defaults to ALL if empty.
-        // So for UI, if empty, we might want to select ALL to verify?
-        // Let's assume empty list from API means NO breaks assigned explicitly (which implied ALL in backend legac code, but my new code is strict IF allowedBreaks > 0).
-        // Wait, my backend logic: `if (user.allowedBreaks.length > 0) ... else return ALL`.
-        // So if I edit a user and they have 0 allowedBreaks, they have ALL breaks effective.
-        // So I should pre-select ALL breaks in UI to represent this state?
-        // Yes, showing "All Selected" is better UX than "None Selected" but actually having access to all.
+
 
         if (agent.allowedBreaks && agent.allowedBreaks.length > 0) {
             setSelectedBreaks(agent.allowedBreaks.map(b => b.id));
