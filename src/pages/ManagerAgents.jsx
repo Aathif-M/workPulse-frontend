@@ -204,8 +204,8 @@ const ManagerAgents = () => {
                                     <td className="p-4 font-medium">{agent.name}</td>
                                     <td className="p-4 text-gray-600">{agent.email}</td>
                                     <td className="p-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
-                                            agent.role === 'MANAGER' || agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                                        <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' || agent.role === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
+                                            agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
                                                 'bg-blue-100 text-blue-800'
                                             }`}>
                                             {agent.role}

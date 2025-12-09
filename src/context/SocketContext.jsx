@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }) => {
             });
             setSocket(newSocket);
 
-            if (user.role === 'MANAGER' || user.role === 'SUPER_ADMIN') {
+            if (user.role === 'MANAGER' || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
                 newSocket.emit('join_manager');
             }
 
