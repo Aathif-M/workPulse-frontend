@@ -173,13 +173,15 @@ const ManagerAgents = () => {
         <div className="p-8">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
-                <button
-                    onClick={openAddModal}
-                    className="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800"
-                >
-                    <Plus size={20} />
-                    Add User
-                </button>
+                {user.role !== 'ADMIN' && (
+                    <button
+                        onClick={openAddModal}
+                        className="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800"
+                    >
+                        <Plus size={20} />
+                        Add User
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -202,33 +204,39 @@ const ManagerAgents = () => {
                                     <td className="p-4 font-medium">{agent.name}</td>
                                     <td className="p-4 text-gray-600">{agent.email}</td>
                                     <td className="p-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'MANAGER' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                                        <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' ? 'bg-purple-100 text-purple-800' :
+                                            agent.role === 'MANAGER' || agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                                                'bg-blue-100 text-blue-800'
                                             }`}>
                                             {agent.role}
                                         </span>
                                     </td>
                                     <td className="p-4 text-gray-600">{agent.createdBy?.name || '-'}</td>
                                     <td className="p-4">
-                                        <button
-                                            onClick={() => handleResetPassword(agent.id)}
-                                            className="text-blue-500 hover:text-blue-700 p-2"
-                                            title="Reset Password"
-                                        >
-                                            <RotateCcw size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleEdit(agent)}
-                                            className="text-gray-500 hover:text-gray-700 p-2"
-                                            title="Edit User"
-                                        >
-                                            <Edit size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(agent.id)}
-                                            className="text-red-500 hover:text-red-700 p-2"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        {user.role !== 'ADMIN' && (
+                                            <>
+                                                <button
+                                                    onClick={() => handleResetPassword(agent.id)}
+                                                    className="text-blue-500 hover:text-blue-700 p-2"
+                                                    title="Reset Password"
+                                                >
+                                                    <RotateCcw size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEdit(agent)}
+                                                    className="text-gray-500 hover:text-gray-700 p-2"
+                                                    title="Edit User"
+                                                >
+                                                    <Edit size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(agent.id)}
+                                                    className="text-red-500 hover:text-red-700 p-2"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -268,7 +276,8 @@ const ManagerAgents = () => {
                                 onChange={e => setFormData({ ...formData, role: e.target.value })}
                                 options={[
                                     { value: 'AGENT', label: 'Agent' },
-                                    { value: 'MANAGER', label: 'Manager' }
+                                    { value: 'MANAGER', label: 'Manager' },
+                                    { value: 'ADMIN', label: 'Admin' }
                                 ]}
                             />
                         </div>
