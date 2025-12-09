@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import LoadingComponent from '../components/LoadingComponent';
 import CustomSelect from '../components/CustomSelect';
 import NotificationToast from '../components/NotificationToast';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const ManagerAgents = () => {
     const { user } = useAuth();
@@ -17,6 +18,13 @@ const ManagerAgents = () => {
     const [breakTypes, setBreakTypes] = useState([]);
     const [selectedBreaks, setSelectedBreaks] = useState([]);
     const [toast, setToast] = useState({ message: '', type: 'success', isOpen: false });
+    const [confirmation, setConfirmation] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        type: 'warning',
+        onConfirm: () => { }
+    });
 
     useEffect(() => {
         fetchAgents();
@@ -70,36 +78,60 @@ const ManagerAgents = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            try {
-                await api.delete(`/users/${id}`);
-                fetchAgents();
-            } catch (error) {
-                console.error(error);
+    const handleDelete = (id) => {
+        setConfirmation({
+            isOpen: true,
+            title: 'Delete User',
+            message: 'Are you sure you want to delete this user? This action cannot be undone.',
+            type: 'danger',
+            confirmText: 'Delete',
+            onConfirm: async () => {
+                try {
+                    await api.delete(`/users/${id}`);
+                    setToast({
+                        isOpen: true,
+                        message: 'User deleted successfully',
+                        type: 'success'
+                    });
+                    fetchAgents();
+                } catch (error) {
+                    console.error(error);
+                    setToast({
+                        isOpen: true,
+                        message: 'Failed to delete user',
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
-    const handleResetPassword = async (id) => {
-        if (window.confirm('Are you sure you want to reset the password to default (meta@147)?')) {
-            const agent = agents.find(a => a.id === id);
-            try {
-                await api.put(`/users/${id}/reset-password`);
-                setToast({
-                    isOpen: true,
-                    message: `Agent ${agent?.name}'s password was successfully reset to temporary password 'meta@147'`,
-                    type: 'success'
-                });
-            } catch (error) {
-                console.error(error);
-                setToast({
-                    isOpen: true,
-                    message: 'Failed to reset password',
-                    type: 'error'
-                });
+    const handleResetPassword = (id) => {
+        const agent = agents.find(a => a.id === id);
+        setConfirmation({
+            isOpen: true,
+            title: 'Reset Password',
+            message: `Are you sure you want to reset the password for ${agent?.name} to default (meta@147)?`,
+            type: 'warning',
+            confirmText: 'Reset Password',
+            onConfirm: async () => {
+                try {
+                    await api.put(`/users/${id}/reset-password`);
+                    setToast({
+                        isOpen: true,
+                        message: `Agent ${agent?.name}'s password was successfully reset to temporary password 'meta@147'`,
+                        type: 'success'
+                    });
+                } catch (error) {
+                    console.error(error);
+                    setToast({
+                        isOpen: true,
+                        message: 'Failed to reset password',
+                        type: 'error'
+                    });
+                }
             }
-        }
+        });
     };
 
     const handleEdit = (agent) => {
@@ -308,6 +340,16 @@ const ManagerAgents = () => {
                     onClose={() => setToast({ ...toast, isOpen: false })}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={confirmation.isOpen}
+                onClose={() => setConfirmation({ ...confirmation, isOpen: false })}
+                onConfirm={confirmation.onConfirm}
+                title={confirmation.title}
+                message={confirmation.message}
+                type={confirmation.type}
+                confirmText={confirmation.confirmText}
+            />
         </div >
     );
 
