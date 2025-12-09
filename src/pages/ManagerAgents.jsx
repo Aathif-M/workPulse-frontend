@@ -5,6 +5,7 @@ import { Plus, Trash2, RotateCcw, Edit } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LoadingComponent from '../components/LoadingComponent';
 import CustomSelect from '../components/CustomSelect';
+import NotificationToast from '../components/NotificationToast';
 
 const ManagerAgents = () => {
     const { user } = useAuth();
@@ -15,6 +16,7 @@ const ManagerAgents = () => {
     const [loading, setLoading] = useState(true);
     const [breakTypes, setBreakTypes] = useState([]);
     const [selectedBreaks, setSelectedBreaks] = useState([]);
+    const [toast, setToast] = useState({ message: '', type: 'success', isOpen: false });
 
     useEffect(() => {
         fetchAgents();
@@ -37,20 +39,34 @@ const ManagerAgents = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const currentName = formData.name; // Capture name for notification
         try {
             if (editingId) {
                 await api.put(`/users/${editingId}`, { ...formData, assignedBreaks: selectedBreaks });
+                setToast({
+                    isOpen: true,
+                    message: `Agent ${currentName} updated successfully`,
+                    type: 'success'
+                });
             } else {
                 await api.post('/users', { ...formData, assignedBreaks: selectedBreaks });
+                setToast({
+                    isOpen: true,
+                    message: `Agent ${currentName} was created successfully with temporary password 'meta@147'`,
+                    type: 'success'
+                });
             }
-            setIsModalOpen(false);
             setIsModalOpen(false);
             setFormData({ name: '', email: '', role: 'AGENT' });
             setSelectedBreaks([]);
             setEditingId(null);
             fetchAgents();
         } catch (error) {
-            alert(error.response?.data?.message || 'Failed to save user');
+            setToast({
+                isOpen: true,
+                message: error.response?.data?.message || 'Failed to save user',
+                type: 'error'
+            });
         }
     };
 
@@ -67,12 +83,21 @@ const ManagerAgents = () => {
 
     const handleResetPassword = async (id) => {
         if (window.confirm('Are you sure you want to reset the password to default (meta@147)?')) {
+            const agent = agents.find(a => a.id === id);
             try {
                 await api.put(`/users/${id}/reset-password`);
-                alert('Password reset successfully');
+                setToast({
+                    isOpen: true,
+                    message: `Agent ${agent?.name}'s password was successfully reset to temporary password 'meta@147'`,
+                    type: 'success'
+                });
             } catch (error) {
                 console.error(error);
-                alert('Failed to reset password');
+                setToast({
+                    isOpen: true,
+                    message: 'Failed to reset password',
+                    type: 'error'
+                });
             }
         }
     };
@@ -274,6 +299,14 @@ const ManagerAgents = () => {
                     </button>
                 </form>
             </Modal>
+
+            {toast.isOpen && (
+                <NotificationToast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, isOpen: false })}
+                />
+            )}
         </div >
     );
 
