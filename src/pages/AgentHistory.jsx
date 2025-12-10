@@ -99,7 +99,7 @@ const AgentHistory = () => {
                 onClick={() => navigate('/dashboard')}
                 className="block w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
             >
-                Dashboard
+                Start / End Breaks
             </button>
             <button
                 onClick={() => navigate('/history')}

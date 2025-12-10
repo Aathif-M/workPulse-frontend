@@ -84,7 +84,7 @@ const UserDashboard = () => {
                 onClick={() => navigate('/dashboard')}
                 className="block w-full text-left py-2 px-4 bg-blue-800 rounded mb-2 transition hover:bg-blue-700"
             >
-                Dashboard
+                Start / End Breaks
             </button>
             <button
                 onClick={() => navigate('/history')}
@@ -107,7 +107,7 @@ const UserDashboard = () => {
         <Layout navLinks={navLinks}>
             <div className="p-4 md:p-8">
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <h2 className="text-2xl font-semibold text-gray-800">User Dashboard</h2>
+                    <h2 className="text-2xl font-semibold text-gray-800">Start / End Breaks</h2>
                     <div className="flex items-center gap-2">
                         <span className="text-gray-600">Welcome,</span>
                         <span className="font-bold">{user?.name}</span>
@@ -196,41 +196,7 @@ const UserDashboard = () => {
                             )}
                         </div>
 
-                        {/* History Section */}
-                        <div className="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 className="text-lg font-semibold mb-4">Recent Breaks</h3>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="border-b">
-                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Type</th>
-                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Start Time</th>
-                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">End Time</th>
-                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Status</th>
-                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Violation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {history.slice(0, 5).map(session => (
-                                            <tr key={session.id} className="border-b last:border-0">
-                                                <td className="py-3 px-2 whitespace-nowrap">{session.breakType.name}</td>
-                                                <td className="py-3 px-2 whitespace-nowrap">{new Date(session.startTime).toLocaleTimeString()}</td>
-                                                <td className="py-3 px-2 whitespace-nowrap">{session.endTime ? new Date(session.endTime).toLocaleTimeString() : '-'}</td>
-                                                <td className="py-3 px-2 whitespace-nowrap">
-                                                    <span className={`px-2 py-1 rounded text-xs ${session.status === 'ONGOING' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                                                        }`}>
-                                                        {session.status}
-                                                    </span>
-                                                </td>
-                                                <td className="py-3 px-2 text-red-500 whitespace-nowrap">
-                                                    {session.violationDuration ? `+${Math.floor(session.violationDuration / 60)}m ${session.violationDuration % 60}s` : '-'}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+
                     </>
                 )}
             </div>
