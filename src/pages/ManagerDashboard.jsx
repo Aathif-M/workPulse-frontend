@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
+import CustomSelect from '../components/CustomSelect';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../api/axios';
@@ -55,6 +56,9 @@ const DashboardContent = () => {
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+    const [filterRole, setFilterRole] = useState('ALL');
+    const [filterStatus, setFilterStatus] = useState('ALL');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         if (user?.mustChangePassword) {
@@ -87,11 +91,80 @@ const DashboardContent = () => {
         }
     };
 
+    const getFilteredAgents = () => {
+        return agents.filter(agent => {
+            // Visibility Rules
+            if (user.role === 'MANAGER' && agent.role !== 'AGENT') return false;
+            // Hide SUPER_ADMIN from ADMIN and MANAGER
+            if (user.role !== 'SUPER_ADMIN' && agent.role === 'SUPER_ADMIN') return false;
+
+            // Search Filter
+            const matchesSearch = (agent.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                (agent.email?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+
+            // Role Filter
+            const matchesRole = filterRole === 'ALL' || agent.role === filterRole;
+
+            // Status Filter
+            const activeSession = agent.breakSessions?.[0];
+            let status = 'OFFLINE';
+            if (activeSession) status = 'ON_BREAK';
+            else if (agent.isOnline) status = 'ONLINE';
+
+            const matchesStatus = filterStatus === 'ALL' || status === filterStatus;
+
+            return matchesSearch && matchesRole && matchesStatus;
+        });
+    };
+
+    const filteredAgents = getFilteredAgents();
+
     if (loading) return <LoadingComponent message="Loading dashboard..." />;
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm">
             <h3 className="text-lg font-semibold mb-6">Users Status</h3>
+
+            {/* Filters Section */}
+            <div className="bg-gray-50 p-4 rounded-lg mb-6 flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                </div>
+                {['SUPER_ADMIN', 'ADMIN'].includes(user.role) && (
+                    <div className="w-full md:w-48">
+                        <CustomSelect
+                            value={filterRole}
+                            onChange={(e) => setFilterRole(e.target.value)}
+                            options={[
+                                { value: 'ALL', label: 'All Roles' },
+                                { value: 'AGENT', label: 'Agent' },
+                                { value: 'MANAGER', label: 'Manager' },
+                                ...(user.role === 'SUPER_ADMIN' ? [{ value: 'ADMIN', label: 'Admin' }] : [])
+                            ]}
+                        />
+                    </div>
+                )}
+                <div className="w-full md:w-48">
+                    <CustomSelect
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        options={[
+                            { value: 'ALL', label: 'All Status' },
+                            { value: 'ONLINE', label: 'Online' },
+                            { value: 'OFFLINE', label: 'Offline' },
+                            { value: 'ON_BREAK', label: 'On Break' }
+                        ]}
+                    />
+                </div>
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>
@@ -107,56 +180,64 @@ const DashboardContent = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {agents.map(agent => {
-                            const activeSession = agent.breakSessions?.[0];
-                            return (
-                                <tr key={agent.id} className="border-b last:border-0 hover:bg-gray-50">
+                        {filteredAgents.length === 0 ? (
+                            <tr>
+                                <td colSpan="7" className="p-8 text-center text-gray-500">
+                                    No users found matching your filters.
+                                </td>
+                            </tr>
+                        ) : (
+                            filteredAgents.map(agent => {
+                                const activeSession = agent.breakSessions?.[0];
+                                return (
+                                    <tr key={agent.id} className="border-b last:border-0 hover:bg-gray-50">
 
-                                    <td className="p-4 font-medium">{agent.name}</td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' || agent.role === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
-                                            agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                                                'bg-blue-100 text-blue-800'
-                                            }`}>
-                                            {agent.role}
-                                        </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="flex flex-col items-start">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${activeSession
-                                                ? 'bg-blue-100 text-blue-800'
-                                                : agent.isOnline
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-gray-100 text-gray-800'
+                                        <td className="p-4 font-medium">{agent.name}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' || agent.role === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
+                                                agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                                                    'bg-blue-100 text-blue-800'
                                                 }`}>
-                                                {activeSession ? 'On-Break' : agent.isOnline ? 'Online' : 'Offline'}
+                                                {agent.role}
                                             </span>
-                                            {!agent.isOnline && !activeSession && agent.lastLogin && (
-                                                <span className="text-xs text-gray-500 mt-1">
-                                                    {new Date(agent.lastLogin).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="flex flex-col items-start">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${activeSession
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : agent.isOnline
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                    {activeSession ? 'On-Break' : agent.isOnline ? 'Online' : 'Offline'}
                                                 </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="p-4 text-gray-600">{activeSession?.breakType?.name || '--'}</td>
-                                    <td className="p-4 text-gray-600">
-                                        {activeSession ? new Date(activeSession.startTime).toLocaleTimeString() : '--'}
-                                    </td>
-                                    <td className="p-4 text-gray-600">
-                                        {activeSession ? new Date(activeSession.expectedEndTime).toLocaleTimeString() : '--'}
-                                    </td>
-                                    <td className="p-4">
-                                        {activeSession ? (
-                                            <Timer
-                                                startTime={activeSession.startTime}
-                                                expectedEndTime={activeSession.expectedEndTime}
-                                                status={activeSession.status}
-                                            />
-                                        ) : '--'}
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                                                {!agent.isOnline && !activeSession && agent.lastLogin && (
+                                                    <span className="text-xs text-gray-500 mt-1">
+                                                        {new Date(agent.lastLogin).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-gray-600">{activeSession?.breakType?.name || '--'}</td>
+                                        <td className="p-4 text-gray-600">
+                                            {activeSession ? new Date(activeSession.startTime).toLocaleTimeString() : '--'}
+                                        </td>
+                                        <td className="p-4 text-gray-600">
+                                            {activeSession ? new Date(activeSession.expectedEndTime).toLocaleTimeString() : '--'}
+                                        </td>
+                                        <td className="p-4">
+                                            {activeSession ? (
+                                                <Timer
+                                                    startTime={activeSession.startTime}
+                                                    expectedEndTime={activeSession.expectedEndTime}
+                                                    status={activeSession.status}
+                                                />
+                                            ) : '--'}
+                                        </td>
+                                    </tr>
+                                );
+                            })
+                        )}
                     </tbody>
                 </table>
             </div>
