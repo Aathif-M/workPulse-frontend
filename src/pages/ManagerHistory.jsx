@@ -81,26 +81,36 @@ const ManagerHistory = () => {
 
         // Role filter and Visibility Rules
         if (user.role === 'MANAGER') {
-            filtered = filtered.filter(session => session.user?.role === 'AGENT');
+            filtered = filtered.filter(session => {
+                const agent = agents.find(a => a.id === session.userId);
+                return agent?.role === 'AGENT';
+            });
         } else if (user.role === 'ADMIN') {
-            filtered = filtered.filter(session => session.user?.role !== 'SUPER_ADMIN');
+            filtered = filtered.filter(session => {
+                const agent = agents.find(a => a.id === session.userId);
+                return agent?.role !== 'SUPER_ADMIN';
+            });
         }
 
         if (filterRole !== 'ALL') {
-            filtered = filtered.filter(session => session.user?.role === filterRole);
+            filtered = filtered.filter(session => {
+                const agent = agents.find(a => a.id === session.userId);
+                return agent?.role === filterRole;
+            });
         }
 
         // Agent filter
         if (filterAgent !== 'ALL') {
-            filtered = filtered.filter(session => session.user?.id === parseInt(filterAgent));
+            filtered = filtered.filter(session => session.userId === parseInt(filterAgent));
         }
 
         // Search agent
         if (searchAgent) {
             const lowerSearch = searchAgent.toLowerCase();
-            filtered = filtered.filter(session =>
-                session.user?.name?.toLowerCase().includes(lowerSearch)
-            );
+            filtered = filtered.filter(session => {
+                const agent = agents.find(a => a.id === session.userId);
+                return agent?.name?.toLowerCase().includes(lowerSearch) || session.user?.name?.toLowerCase().includes(lowerSearch);
+            });
         }
 
         // Break type filter
