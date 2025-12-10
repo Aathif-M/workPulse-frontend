@@ -114,7 +114,7 @@ const AgentHistory = () => {
                     className="flex items-center gap-2 w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
                 >
                     <ArrowLeft size={18} />
-                    <span>Manager Dashboard</span>
+                    <span>Admin Dashboard</span>
                 </button>
             )}
         </>
