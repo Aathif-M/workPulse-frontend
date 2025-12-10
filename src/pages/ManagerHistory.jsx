@@ -550,7 +550,6 @@ const ManagerHistory = () => {
                                 options={[
                                     { value: 'ALL', label: 'All Roles' },
                                     { value: 'AGENT', label: 'Agent' },
-                                    { value: 'MANAGER', label: 'Manager' },
                                     ...(user.role === 'SUPER_ADMIN' ? [{ value: 'ADMIN', label: 'Admin' }] : [])
                                 ]}
                             />
