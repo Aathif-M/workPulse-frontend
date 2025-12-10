@@ -269,7 +269,7 @@ const ManagerAgents = () => {
                         </div>
                     )}
 
-                    {formData.role === 'AGENT' && (
+                    {(formData.role === 'AGENT' || formData.role === 'ADMIN') && (
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">Allowed Breaks</label>
                             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1">
