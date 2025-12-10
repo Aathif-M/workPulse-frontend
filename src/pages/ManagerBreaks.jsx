@@ -102,10 +102,11 @@ const ManagerBreaks = () => {
     };
 
     const openEditModal = (breakType) => {
-        setFormData({ name: breakType.name, duration: breakType.duration });
+        const duration = Number(breakType.duration) || 0;
+        setFormData({ name: breakType.name, duration: duration });
         setDurationSplit({
-            minutes: Math.floor(breakType.duration / 60),
-            seconds: breakType.duration % 60
+            minutes: Math.floor(duration / 60),
+            seconds: duration % 60
         });
         setEditingId(breakType.id);
         setisEditModalOpen(true);

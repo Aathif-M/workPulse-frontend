@@ -10,7 +10,7 @@ import NotificationToast from '../components/NotificationToast';
 import { Coffee, Utensils, Zap, Clock, PlayCircle } from 'lucide-react';
 
 const UserDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const navigate = useNavigate();
     const [breakTypes, setBreakTypes] = useState([]);
     const [currentSession, setCurrentSession] = useState(null);
@@ -69,7 +69,6 @@ const UserDashboard = () => {
             await api.post('/breaks/end');
             fetchData();
         } catch (error) {
-            console.error(error);
             setCurrentSession(previousSession); // Revert on failure
             setToast({
                 isOpen: true,

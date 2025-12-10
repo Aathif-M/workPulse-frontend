@@ -58,18 +58,24 @@ const AgentHistory = () => {
     };
 
     const calculateDuration = (startTime, endTime) => {
-        if (!endTime) return '-';
+        if (!endTime || !startTime) return '-';
         const start = new Date(startTime);
         const end = new Date(endTime);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
+
         const diff = Math.floor((end - start) / 1000); // in seconds
+        if (diff < 0) return '-';
+
         const mins = Math.floor(diff / 60);
         const secs = diff % 60;
         return `${mins}m ${secs}s`;
     };
 
     const formatDateTime = (dateString) => {
+        if (!dateString) return '-';
         const date = new Date(dateString);
-        return date.toLocaleString();
+        return isNaN(date.getTime()) ? '-' : date.toLocaleString();
     };
 
     const getStatusColor = (status) => {

@@ -40,7 +40,6 @@ const ManagerAgents = () => {
             setBreakTypes(breaksRes.data);
             setLoading(false);
         } catch (error) {
-            console.error(error);
             setLoading(false);
         }
     };
@@ -95,7 +94,6 @@ const ManagerAgents = () => {
                     });
                     fetchAgents();
                 } catch (error) {
-                    console.error(error);
                     setToast({
                         isOpen: true,
                         message: 'Failed to delete user',
@@ -123,7 +121,6 @@ const ManagerAgents = () => {
                         type: 'success'
                     });
                 } catch (error) {
-                    console.error(error);
                     setToast({
                         isOpen: true,
                         message: 'Failed to reset password',
@@ -138,8 +135,7 @@ const ManagerAgents = () => {
         setFormData({ name: agent.name, email: agent.email, role: agent.role });
         setEditingId(agent.id);
 
-
-        if (agent.allowedBreaks && agent.allowedBreaks.length > 0) {
+        if (agent.allowedBreaks && Array.isArray(agent.allowedBreaks) && agent.allowedBreaks.length > 0) {
             setSelectedBreaks(agent.allowedBreaks.map(b => b.id));
         } else {
             // Default to all active breaks if none explicitly assigned (Legacy support)

@@ -46,7 +46,7 @@ const ManagerDashboard = () => {
 };
 
 const DashboardContent = () => {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const socket = useSocket();
     const [agents, setAgents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -79,7 +79,6 @@ const DashboardContent = () => {
             setAgents(res.data);
             setLoading(false);
         } catch (error) {
-            console.error(error);
             setLoading(false);
         }
     };
