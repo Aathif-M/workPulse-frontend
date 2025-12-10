@@ -103,8 +103,6 @@ const UserDashboard = () => {
         </>
     );
 
-    if (loading) return <LoadingComponent message="Loading dashboard..." />;
-
     return (
         <Layout navLinks={navLinks}>
             <div className="p-4 md:p-8">
@@ -112,121 +110,129 @@ const UserDashboard = () => {
                     <h2 className="text-2xl font-semibold text-gray-800">User Dashboard</h2>
                     <div className="flex items-center gap-2">
                         <span className="text-gray-600">Welcome,</span>
-                        <span className="font-bold">{user.name}</span>
+                        <span className="font-bold">{user?.name}</span>
                     </div>
                 </header>
 
-                {/* Active Break Section */}
-                <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-                    <div className="flex items-center gap-3 mb-4">
-                        <h3 className="text-lg font-semibold">Current Status</h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${currentSession
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
-                            }`}>
-                            {currentSession ? 'On-Break' : 'Online'}
-                        </span>
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <LoadingComponent message="Loading dashboard..." />
                     </div>
-                    {currentSession ? (
-                        <div className="text-center py-8">
-                            <p className="text-gray-500 mb-2">You are on a</p>
-                            <h2 className="text-3xl font-bold text-blue-900 mb-4">{currentSession.breakType.name}</h2>
-                            <div className="mb-8">
-                                <Timer
-                                    startTime={currentSession.startTime}
-                                    expectedEndTime={currentSession.expectedEndTime}
-                                    status={currentSession.status}
-                                    large={true}
-                                />
+                ) : (
+                    <>
+                        {/* Active Break Section */}
+                        <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+                            <div className="flex items-center gap-3 mb-4">
+                                <h3 className="text-lg font-semibold">Current Status</h3>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${currentSession
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-green-100 text-green-800'
+                                    }`}>
+                                    {currentSession ? 'On-Break' : 'Online'}
+                                </span>
                             </div>
-                            <button
-                                onClick={endBreak}
-                                className="bg-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-600 transition"
-                            >
-                                End Break
-                            </button>
+                            {currentSession ? (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500 mb-2">You are on a</p>
+                                    <h2 className="text-3xl font-bold text-blue-900 mb-4">{currentSession.breakType.name}</h2>
+                                    <div className="mb-8">
+                                        <Timer
+                                            startTime={currentSession.startTime}
+                                            expectedEndTime={currentSession.expectedEndTime}
+                                            status={currentSession.status}
+                                            large={true}
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={endBreak}
+                                        className="bg-red-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-600 transition"
+                                    >
+                                        End Break
+                                    </button>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p className="text-gray-600 mb-4 font-medium">Select a break type to start:</p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                                        {breakTypes.map(type => {
+                                            const getIcon = (name) => {
+                                                const lower = name.toLowerCase();
+                                                if (lower.includes('lunch') || lower.includes('dinner') || lower.includes('food')) return <Utensils size={32} className="text-orange-500" />;
+                                                if (lower.includes('tea') || lower.includes('coffee')) return <Coffee size={32} className="text-amber-700" />;
+                                                if (lower.includes('short') || lower.includes('bio')) return <Zap size={32} className="text-yellow-500" />;
+                                                return <Clock size={32} className="text-blue-500" />;
+                                            };
+
+                                            return (
+                                                <button
+                                                    key={type.id}
+                                                    onClick={() => startBreak(type.id)}
+                                                    className="group relative bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 text-left overflow-hidden"
+                                                >
+                                                    <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                        <PlayCircle className="text-blue-600" size={24} />
+                                                    </div>
+
+                                                    <div className="mb-4 p-3 bg-gray-50 rounded-full w-fit group-hover:bg-blue-50 transition-colors">
+                                                        {getIcon(type.name)}
+                                                    </div>
+
+                                                    <h4 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-800 transition-colors">
+                                                        {type.name}
+                                                    </h4>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                                            {Math.floor(type.duration / 60)} mins
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    ) : (
-                        <div>
-                            <p className="text-gray-600 mb-4 font-medium">Select a break type to start:</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-                                {breakTypes.map(type => {
-                                    const getIcon = (name) => {
-                                        const lower = name.toLowerCase();
-                                        if (lower.includes('lunch') || lower.includes('dinner') || lower.includes('food')) return <Utensils size={32} className="text-orange-500" />;
-                                        if (lower.includes('tea') || lower.includes('coffee')) return <Coffee size={32} className="text-amber-700" />;
-                                        if (lower.includes('short') || lower.includes('bio')) return <Zap size={32} className="text-yellow-500" />;
-                                        return <Clock size={32} className="text-blue-500" />;
-                                    };
 
-                                    return (
-                                        <button
-                                            key={type.id}
-                                            onClick={() => startBreak(type.id)}
-                                            className="group relative bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-blue-200 transition-all duration-300 text-left overflow-hidden"
-                                        >
-                                            <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                                <PlayCircle className="text-blue-600" size={24} />
-                                            </div>
-
-                                            <div className="mb-4 p-3 bg-gray-50 rounded-full w-fit group-hover:bg-blue-50 transition-colors">
-                                                {getIcon(type.name)}
-                                            </div>
-
-                                            <h4 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-800 transition-colors">
-                                                {type.name}
-                                            </h4>
-
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                                    {Math.floor(type.duration / 60)} mins
-                                                </span>
-                                            </div>
-
-                                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-                                        </button>
-                                    );
-                                })}
+                        {/* History Section */}
+                        <div className="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 className="text-lg font-semibold mb-4">Recent Breaks</h3>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="border-b">
+                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Type</th>
+                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Start Time</th>
+                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">End Time</th>
+                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Status</th>
+                                            <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Violation</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {history.slice(0, 5).map(session => (
+                                            <tr key={session.id} className="border-b last:border-0">
+                                                <td className="py-3 px-2 whitespace-nowrap">{session.breakType.name}</td>
+                                                <td className="py-3 px-2 whitespace-nowrap">{new Date(session.startTime).toLocaleTimeString()}</td>
+                                                <td className="py-3 px-2 whitespace-nowrap">{session.endTime ? new Date(session.endTime).toLocaleTimeString() : '-'}</td>
+                                                <td className="py-3 px-2 whitespace-nowrap">
+                                                    <span className={`px-2 py-1 rounded text-xs ${session.status === 'ONGOING' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                                                        }`}>
+                                                        {session.status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 px-2 text-red-500 whitespace-nowrap">
+                                                    {session.violationDuration ? `+${Math.floor(session.violationDuration / 60)}m ${session.violationDuration % 60}s` : '-'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    )}
-                </div>
-
-                {/* History Section */}
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <h3 className="text-lg font-semibold mb-4">Recent Breaks</h3>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="border-b">
-                                    <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Type</th>
-                                    <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Start Time</th>
-                                    <th className="pb-3 text-gray-600 whitespace-nowrap px-2">End Time</th>
-                                    <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Status</th>
-                                    <th className="pb-3 text-gray-600 whitespace-nowrap px-2">Violation</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {history.slice(0, 5).map(session => (
-                                    <tr key={session.id} className="border-b last:border-0">
-                                        <td className="py-3 px-2 whitespace-nowrap">{session.breakType.name}</td>
-                                        <td className="py-3 px-2 whitespace-nowrap">{new Date(session.startTime).toLocaleTimeString()}</td>
-                                        <td className="py-3 px-2 whitespace-nowrap">{session.endTime ? new Date(session.endTime).toLocaleTimeString() : '-'}</td>
-                                        <td className="py-3 px-2 whitespace-nowrap">
-                                            <span className={`px-2 py-1 rounded text-xs ${session.status === 'ONGOING' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {session.status}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 px-2 text-red-500 whitespace-nowrap">
-                                            {session.violationDuration ? `+${Math.floor(session.violationDuration / 60)}m ${session.violationDuration % 60}s` : '-'}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
 
             <ChangePasswordModal
