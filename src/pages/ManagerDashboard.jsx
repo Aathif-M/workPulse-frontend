@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../api/axios';
@@ -22,7 +23,10 @@ const ManagerDashboard = () => {
             <Link to="/manager/breaks" className={`block py-2 px-4 rounded mb-2 ${location.pathname.includes('/breaks') ? 'bg-blue-800' : 'hover:bg-blue-800'}`}>Breaks</Link>
             <Link to="/manager/history" className={`block py-2 px-4 rounded mb-2 ${location.pathname.includes('/history') ? 'bg-blue-800' : 'hover:bg-blue-800'}`}>History & Analytics</Link>
             {user.role === 'ADMIN' && (
-                <Link to="/dashboard" className="block py-2 px-4 rounded mb-2 hover:bg-blue-800">Start / End Break</Link>
+                <Link to="/dashboard" className="flex items-center justify-between py-2 px-4 rounded mb-2 hover:bg-blue-800">
+                    <span>Start / End Break</span>
+                    <ArrowRight size={18} />
+                </Link>
             )}
         </>
     );
