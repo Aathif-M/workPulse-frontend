@@ -24,9 +24,11 @@ const ChangePasswordModal = ({ isOpen, onClose, forceChange = false }) => {
 
         setLoading(true);
         try {
-            const response = await api.post('/auth/update-password', {
-                newPassword
-            });
+            const payload = { newPassword };
+            if (forceChange) {
+                payload.oldPassword = 'meta@147';
+            }
+            const response = await api.post('/auth/update-password', payload);
             setMessage(response.data.message);
             updateUser({ mustChangePassword: false });
             setNewPassword('');
