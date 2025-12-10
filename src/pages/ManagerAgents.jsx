@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import Modal from '../components/Modal';
-import { Plus, Trash2, RotateCcw, Edit } from 'lucide-react';
+import { Plus, Trash2, RotateCcw, Edit, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LoadingComponent from '../components/LoadingComponent';
 import CustomSelect from '../components/CustomSelect';
@@ -25,6 +25,10 @@ const ManagerAgents = () => {
         type: 'warning',
         onConfirm: () => { }
     });
+
+    const [filterRole, setFilterRole] = useState('ALL');
+    const [filterStatus, setFilterStatus] = useState('ALL');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchAgents();
@@ -151,6 +155,33 @@ const ManagerAgents = () => {
         setIsModalOpen(true);
     };
 
+    const getFilteredAgents = () => {
+        return agents.filter(agent => {
+            // Visibility Rules
+            if (user.role === 'MANAGER' && agent.role !== 'AGENT') return false;
+            if (user.role === 'ADMIN' && agent.role === 'SUPER_ADMIN') return false;
+
+            // Search Filter
+            const matchesSearch = (agent.name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                (agent.email?.toLowerCase() || '').includes(searchQuery.toLowerCase());
+
+            // Role Filter
+            const matchesRole = filterRole === 'ALL' || agent.role === filterRole;
+
+            // Status Filter
+            const activeSession = agent.breakSessions?.[0];
+            let status = 'OFFLINE';
+            if (activeSession) status = 'ON_BREAK';
+            else if (agent.isOnline) status = 'ONLINE';
+
+            const matchesStatus = filterStatus === 'ALL' || status === filterStatus;
+
+            return matchesSearch && matchesRole && matchesStatus;
+        });
+    };
+
+    const filteredAgents = getFilteredAgents();
+
 
 
     if (loading) return <LoadingComponent message="Loading users..." />;
@@ -165,9 +196,49 @@ const ManagerAgents = () => {
                         className="bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800"
                     >
                         <Plus size={20} />
-                        Add User
+                        {user.role === 'MANAGER' ? 'Add Agent' : 'Add User'}
                     </button>
                 )}
+            </div>
+
+            {/* Filters Section */}
+            <div className="bg-white p-4 rounded-lg shadow-sm mb-6 flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                        type="text"
+                        placeholder="Search users..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+                {['SUPER_ADMIN', 'ADMIN'].includes(user.role) && (
+                    <div className="w-full md:w-48">
+                        <CustomSelect
+                            value={filterRole}
+                            onChange={e => setFilterRole(e.target.value)}
+                            options={[
+                                { value: 'ALL', label: 'All Roles' },
+                                { value: 'AGENT', label: 'Agent' },
+                                { value: 'MANAGER', label: 'Manager' },
+                                ...(user.role === 'SUPER_ADMIN' ? [{ value: 'ADMIN', label: 'Admin' }] : [])
+                            ]}
+                        />
+                    </div>
+                )}
+                <div className="w-full md:w-48">
+                    <CustomSelect
+                        value={filterStatus}
+                        onChange={e => setFilterStatus(e.target.value)}
+                        options={[
+                            { value: 'ALL', label: 'All Status' },
+                            { value: 'ONLINE', label: 'Online' },
+                            { value: 'OFFLINE', label: 'Offline' },
+                            { value: 'ON_BREAK', label: 'On Break' }
+                        ]}
+                    />
+                </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -175,7 +246,6 @@ const ManagerAgents = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b">
                             <tr>
-
                                 <th className="p-4 text-gray-600 font-medium">Name</th>
                                 <th className="p-4 text-gray-600 font-medium">Email</th>
                                 <th className="p-4 text-gray-600 font-medium">Role</th>
@@ -184,54 +254,62 @@ const ManagerAgents = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {agents.map(agent => (
-                                <tr key={agent.id} className="border-b last:border-0 hover:bg-gray-50">
-
-                                    <td className="p-4 font-medium">{agent.name}</td>
-                                    <td className="p-4 text-gray-600">{agent.email}</td>
-                                    <td className="p-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' || agent.role === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
-                                            agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
-                                                'bg-blue-100 text-blue-800'
-                                            }`}>
-                                            {agent.role}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-gray-600">{agent.createdBy?.name || '-'}</td>
-                                    <td className="p-4">
-                                        {user.role !== 'ADMIN' && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleResetPassword(agent.id)}
-                                                    className="text-blue-500 hover:text-blue-700 p-2"
-                                                    title="Reset Password"
-                                                >
-                                                    <RotateCcw size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleEdit(agent)}
-                                                    className="text-gray-500 hover:text-gray-700 p-2"
-                                                    title="Edit User"
-                                                >
-                                                    <Edit size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(agent.id)}
-                                                    className="text-red-500 hover:text-red-700 p-2"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </>
-                                        )}
+                            {filteredAgents.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="p-8 text-center text-gray-500">
+                                        No users found matching your filters.
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredAgents.map(agent => (
+                                    <tr key={agent.id} className="border-b last:border-0 hover:bg-gray-50">
+
+                                        <td className="p-4 font-medium">{agent.name}</td>
+                                        <td className="p-4 text-gray-600">{agent.email}</td>
+                                        <td className="p-4">
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${agent.role === 'SUPER_ADMIN' || agent.role === 'MANAGER' ? 'bg-purple-100 text-purple-800' :
+                                                agent.role === 'ADMIN' ? 'bg-red-100 text-red-800' :
+                                                    'bg-blue-100 text-blue-800'
+                                                }`}>
+                                                {agent.role}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-gray-600">{agent.createdBy?.name || '-'}</td>
+                                        <td className="p-4">
+                                            {user.role !== 'ADMIN' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleResetPassword(agent.id)}
+                                                        className="text-blue-500 hover:text-blue-700 p-2"
+                                                        title="Reset Password"
+                                                    >
+                                                        <RotateCcw size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEdit(agent)}
+                                                        className="text-gray-500 hover:text-gray-700 p-2"
+                                                        title="Edit User"
+                                                    >
+                                                        <Edit size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(agent.id)}
+                                                        className="text-red-500 hover:text-red-700 p-2"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingId ? "Edit User" : "Add New User"}>
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingId ? "Edit User" : (user.role === 'MANAGER' ? "Add New Agent" : "Add New User")}>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
@@ -322,7 +400,7 @@ const ManagerAgents = () => {
                         type="submit"
                         className="w-full bg-blue-900 text-white py-2 rounded hover:bg-blue-800"
                     >
-                        {editingId ? "Update User" : "Add User"}
+                        {editingId ? "Update User" : (user.role === 'MANAGER' ? "Add Agent" : "Add User")}
                     </button>
                 </form>
             </Modal>
