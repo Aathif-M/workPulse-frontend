@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import LoadingComponent from '../components/LoadingComponent';
 import CustomSelect from '../components/CustomSelect';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 const AgentHistory = () => {
     const { user } = useAuth();
@@ -97,9 +98,10 @@ const AgentHistory = () => {
         <>
             <button
                 onClick={() => navigate('/dashboard')}
-                className="block w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
+                className="flex items-center justify-between w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
             >
-                Start / End Breaks
+                <span>Start / End Breaks</span>
+                <ArrowRight size={18} />
             </button>
             <button
                 onClick={() => navigate('/history')}
@@ -110,9 +112,10 @@ const AgentHistory = () => {
             {user.role === 'ADMIN' && (
                 <button
                     onClick={() => navigate('/manager')}
-                    className="block w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
+                    className="flex items-center gap-2 w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
                 >
-                    Manager Dashboard
+                    <ArrowLeft size={18} />
+                    <span>Manager Dashboard</span>
                 </button>
             )}
         </>

@@ -7,7 +7,7 @@ import ChangePasswordModal from '../components/ChangePasswordModal';
 import Layout from '../components/Layout';
 import LoadingComponent from '../components/LoadingComponent';
 import NotificationToast from '../components/NotificationToast';
-import { Coffee, Utensils, Zap, Clock, PlayCircle } from 'lucide-react';
+import { Coffee, Utensils, Zap, Clock, PlayCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 
 const UserDashboard = () => {
     const { user, logout, updateUser } = useAuth();
@@ -82,9 +82,10 @@ const UserDashboard = () => {
         <>
             <button
                 onClick={() => navigate('/dashboard')}
-                className="block w-full text-left py-2 px-4 bg-blue-800 rounded mb-2 transition hover:bg-blue-700"
+                className="flex items-center justify-between w-full text-left py-2 px-4 bg-blue-800 rounded mb-2 transition hover:bg-blue-700"
             >
-                Start / End Breaks
+                <span>Start / End Breaks</span>
+                <ArrowRight size={18} />
             </button>
             <button
                 onClick={() => navigate('/history')}
@@ -95,9 +96,10 @@ const UserDashboard = () => {
             {user.role === 'ADMIN' && (
                 <button
                     onClick={() => navigate('/manager')}
-                    className="block w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
+                    className="flex items-center gap-2 w-full text-left py-2 px-4 hover:bg-blue-800 rounded mb-2 transition"
                 >
-                    Manager Dashboard
+                    <ArrowLeft size={18} />
+                    <span>Manager Dashboard</span>
                 </button>
             )}
         </>
