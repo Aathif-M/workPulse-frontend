@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import html2pdf from 'html2pdf.js';
 import LoadingComponent from '../components/LoadingComponent';
+import { useAuth } from '../context/AuthContext';
 
 import CustomSelect from '../components/CustomSelect';
 import NotificationToast from '../components/NotificationToast';
@@ -12,8 +13,10 @@ const ManagerHistory = () => {
     const [breakTypes, setBreakTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { user } = useAuth();
 
     // Filter and sort states
+    const [filterRole, setFilterRole] = useState('ALL');
     const [filterAgent, setFilterAgent] = useState('ALL');
     const [filterBreakType, setFilterBreakType] = useState('ALL');
     const [filterStatus, setFilterStatus] = useState('ALL');
@@ -76,9 +79,20 @@ const ManagerHistory = () => {
     const getFilteredHistory = () => {
         let filtered = history;
 
+        // Role filter and Visibility Rules
+        if (user.role === 'MANAGER') {
+            filtered = filtered.filter(session => session.user?.role === 'AGENT');
+        } else if (user.role === 'ADMIN') {
+            filtered = filtered.filter(session => session.user?.role !== 'SUPER_ADMIN');
+        }
+
+        if (filterRole !== 'ALL') {
+            filtered = filtered.filter(session => session.user?.role === filterRole);
+        }
+
         // Agent filter
         if (filterAgent !== 'ALL') {
-            filtered = filtered.filter(session => session.userId === parseInt(filterAgent));
+            filtered = filtered.filter(session => session.user?.id === parseInt(filterAgent));
         }
 
         // Search agent
@@ -490,7 +504,7 @@ const ManagerHistory = () => {
                     <span>Filters & Search</span>
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Search Agent</label>
                         <input
@@ -516,6 +530,22 @@ const ManagerHistory = () => {
                             ]}
                         />
                     </div>
+
+                    {['SUPER_ADMIN', 'ADMIN'].includes(user.role) && (
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Role</label>
+                            <CustomSelect
+                                value={filterRole}
+                                onChange={(e) => setFilterRole(e.target.value)}
+                                options={[
+                                    { value: 'ALL', label: 'All Roles' },
+                                    { value: 'AGENT', label: 'Agent' },
+                                    { value: 'MANAGER', label: 'Manager' },
+                                    ...(user.role === 'SUPER_ADMIN' ? [{ value: 'ADMIN', label: 'Admin' }] : [])
+                                ]}
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Break Type</label>
@@ -544,7 +574,10 @@ const ManagerHistory = () => {
                             ]}
                         />
                     </div>
+
                 </div>
+
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <div>
@@ -618,6 +651,7 @@ const ManagerHistory = () => {
 
                     <button
                         onClick={() => {
+                            setFilterRole('ALL');
                             setFilterAgent('ALL');
                             setFilterBreakType('ALL');
                             setFilterStatus('ALL');
@@ -633,72 +667,76 @@ const ManagerHistory = () => {
             </div>
 
             {/* Agent Stats */}
-            {Object.keys(agentStats).length > 0 && (
-                <div className="card bg-white p-6 rounded-lg shadow mb-6 border-l-4 border-blue-900">
-                    <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-                        <span>Agent Performance</span>
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Object.entries(agentStats).map(([agentId, stats]) => (
-                            <div key={agentId} className="card-inner bg-white p-6 rounded-lg shadow-lg border-t-4 border-gray-500">
-                                <div className="font-bold text-gray-900 mb-3 text-lg">{stats.name}</div>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Breaks Taken:</span>
-                                        <span className="badge badge-primary">{stats.count}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Violations:</span>
-                                        <span className={`badge ${stats.violations > 0 ? 'badge-danger' : 'badge-success'}`}>
-                                            {stats.violations}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Total Violation:</span>
-                                        <span className="badge badge-warning">
-                                            {formatMinutesToHM(Math.floor(stats.totalViolationTime / 60))}
-                                        </span>
+            {
+                Object.keys(agentStats).length > 0 && (
+                    <div className="card bg-white p-6 rounded-lg shadow mb-6 border-l-4 border-blue-900">
+                        <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+                            <span>Agent Performance</span>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Object.entries(agentStats).map(([agentId, stats]) => (
+                                <div key={agentId} className="card-inner bg-white p-6 rounded-lg shadow-lg border-t-4 border-gray-500">
+                                    <div className="font-bold text-gray-900 mb-3 text-lg">{stats.name}</div>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Breaks Taken:</span>
+                                            <span className="badge badge-primary">{stats.count}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Violations:</span>
+                                            <span className={`badge ${stats.violations > 0 ? 'badge-danger' : 'badge-success'}`}>
+                                                {stats.violations}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Total Violation:</span>
+                                            <span className="badge badge-warning">
+                                                {formatMinutesToHM(Math.floor(stats.totalViolationTime / 60))}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Break Type Stats */}
-            {Object.keys(breakTypeStats).length > 0 && (
-                <div className="card bg-white p-6 rounded-lg shadow mb-6 border-l-4 border-blue-900">
-                    <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
-                        <span>Break Type Summary</span>
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Object.entries(breakTypeStats).map(([typeId, stats]) => (
-                            <div key={typeId} className="card-inner bg-white p-6 rounded-lg shadow-lg border-t-4 border-gray-500">
-                                <div className="font-bold text-gray-900 mb-3 text-lg">{stats.name}</div>
-                                <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Instances:</span>
-                                        <span className="badge badge-primary">{stats.count}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Total Duration:</span>
-                                        <span className="font-semibold text-gray-900">
-                                            {formatMinutesToHM(Math.floor(stats.totalDuration))}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Average:</span>
-                                        <span className="font-semibold text-gray-900">
-                                            {formatMinutesToHM(Math.floor(stats.totalDuration / stats.count))}
-                                        </span>
+            {
+                Object.keys(breakTypeStats).length > 0 && (
+                    <div className="card bg-white p-6 rounded-lg shadow mb-6 border-l-4 border-blue-900">
+                        <h3 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
+                            <span>Break Type Summary</span>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Object.entries(breakTypeStats).map(([typeId, stats]) => (
+                                <div key={typeId} className="card-inner bg-white p-6 rounded-lg shadow-lg border-t-4 border-gray-500">
+                                    <div className="font-bold text-gray-900 mb-3 text-lg">{stats.name}</div>
+                                    <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Instances:</span>
+                                            <span className="badge badge-primary">{stats.count}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Total Duration:</span>
+                                            <span className="font-semibold text-gray-900">
+                                                {formatMinutesToHM(Math.floor(stats.totalDuration))}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Average:</span>
+                                            <span className="font-semibold text-gray-900">
+                                                {formatMinutesToHM(Math.floor(stats.totalDuration / stats.count))}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* History Table */}
             <div className="card bg-white p-6 rounded-lg shadow overflow-hidden mb-6">
@@ -842,15 +880,17 @@ const ManagerHistory = () => {
                     </div>
                 </div>
             </div>
-            {toast.isOpen && (
-                <NotificationToast
-                    message={toast.message}
-                    type={toast.type}
-                    duration={3000}
-                    onClose={() => setToast({ ...toast, isOpen: false })}
-                />
-            )}
-        </div>
+            {
+                toast.isOpen && (
+                    <NotificationToast
+                        message={toast.message}
+                        type={toast.type}
+                        duration={3000}
+                        onClose={() => setToast({ ...toast, isOpen: false })}
+                    />
+                )
+            }
+        </div >
     );
 };
 
