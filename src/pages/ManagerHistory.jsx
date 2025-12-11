@@ -185,6 +185,15 @@ const ManagerHistory = () => {
         return `${hours}h ${mins}m`;
     };
 
+    const formatViolationDuration = (seconds) => {
+        if (!seconds || seconds <= 0) return '0s';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        if (minutes === 0) return `${remainingSeconds}s`;
+        if (remainingSeconds === 0) return `${minutes}m`;
+        return `${minutes}m ${remainingSeconds}s`;
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'ONGOING':
@@ -373,7 +382,7 @@ const ManagerHistory = () => {
                 session.endTime ? new Date(session.endTime).toLocaleString() : 'Ongoing',
                 calculateDuration(session.startTime, session.endTime).display,
                 session.status,
-                session.violationDuration ? formatMinutesToHM(Math.floor(session.violationDuration / 60)) : '-'
+                session.violationDuration ? formatViolationDuration(session.violationDuration) : '-'
             ];
 
             cells.forEach(cellContent => {
@@ -428,9 +437,7 @@ const ManagerHistory = () => {
             }, 0) / 60
         ),
         violationCount: filteredData.filter(s => s.violationDuration).length,
-        totalViolationTime: Math.floor(
-            filteredData.reduce((sum, s) => sum + (s.violationDuration || 0), 0) / 60
-        ),
+        totalViolationTime: filteredData.reduce((sum, s) => sum + (s.violationDuration || 0), 0),
         averageDuration: Math.floor(
             filteredData.reduce((sum, s) => {
                 if (s.endTime) {
@@ -700,7 +707,7 @@ const ManagerHistory = () => {
                                         <div className="flex justify-between items-center">
                                             <span className="text-gray-600">Total Violation:</span>
                                             <span className="badge badge-warning">
-                                                {formatMinutesToHM(Math.floor(stats.totalViolationTime / 60))}
+                                                {formatViolationDuration(stats.totalViolationTime)}
                                             </span>
                                         </div>
                                     </div>
@@ -803,7 +810,7 @@ const ManagerHistory = () => {
                                             <td className="p-4">
                                                 {session.violationDuration ? (
                                                     <span className="bg-red-100 text-red-800 p-1 rounded px-3">
-                                                        +{formatMinutesToHM(Math.floor(session.violationDuration / 60))}
+                                                        +{formatViolationDuration(session.violationDuration)}
                                                     </span>
                                                 ) : (
                                                     <span className="font-semibold text-gray-900">-</span>
@@ -854,7 +861,7 @@ const ManagerHistory = () => {
                                                             <p className="text-xs text-gray-600 font-bold uppercase mb-1">Status</p>
                                                             <p className={`font-bold text-lg ${session.violationDuration ? 'text-red-600' : !session.endTime ? 'text-blue-600' : 'text-green-600'}`}>
                                                                 {session.violationDuration
-                                                                    ? ` +${formatMinutesToHM(Math.floor(session.violationDuration / 60))} (Violation)`
+                                                                    ? ` +${formatViolationDuration(session.violationDuration)} (Violation)`
                                                                     : !session.endTime
                                                                         ? 'Ongoing'
                                                                         : 'On Time'}
