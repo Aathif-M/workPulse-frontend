@@ -162,13 +162,11 @@ const ManagerHistory = () => {
     };
 
     const calculateDuration = (startTime, endTime) => {
-        if (!endTime) return { minutes: 0, display: '--' };
+        if (!endTime) return { display: '--' };
         const start = new Date(startTime);
         const end = new Date(endTime);
         const diff = Math.floor((end - start) / 1000); // in seconds
-        const mins = Math.floor(diff / 60);
-        const secs = diff % 60;
-        return { minutes: mins, display: `${mins}m ${secs}s` };
+        return { display: formatDurationHMS(diff) };
     };
 
     const formatDateTime = (dateString) => {
@@ -176,23 +174,20 @@ const ManagerHistory = () => {
         return date.toLocaleString();
     };
 
-    const formatMinutesToHM = (minutes) => {
-        if (!minutes || minutes === 0) return '0m';
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        if (hours === 0) return `${mins}m`;
-        if (mins === 0) return `${hours}h`;
-        return `${hours}h ${mins}m`;
+    const formatDurationHMS = (seconds) => {
+        if (!seconds || seconds <= 0) return '0s';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+
+        const parts = [];
+        if (h > 0) parts.push(`${h}h`);
+        if (m > 0) parts.push(`${m}m`);
+        if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+        return parts.join(' ');
     };
 
-    const formatViolationDuration = (seconds) => {
-        if (!seconds || seconds <= 0) return '0s';
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = seconds % 60;
-        if (minutes === 0) return `${remainingSeconds}s`;
-        if (remainingSeconds === 0) return `${minutes}m`;
-        return `${minutes}m ${remainingSeconds}s`;
-    };
+
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -261,7 +256,7 @@ const ManagerHistory = () => {
             { label: 'Total Sessions', value: stats.totalSessions },
             { label: 'Completed Sessions', value: stats.completedSessions },
             { label: 'Break Violations', value: stats.violationCount },
-            { label: 'Total Duration', value: formatMinutesToHM(stats.totalDuration) }
+            { label: 'Total Duration', value: formatDurationHMS(stats.totalDuration) }
         ];
 
         statItems.forEach(item => {
@@ -382,7 +377,7 @@ const ManagerHistory = () => {
                 session.endTime ? new Date(session.endTime).toLocaleString() : 'Ongoing',
                 calculateDuration(session.startTime, session.endTime).display,
                 session.status,
-                session.violationDuration ? formatViolationDuration(session.violationDuration) : '-'
+                session.violationDuration ? formatDurationHMS(session.violationDuration) : '-'
             ];
 
             cells.forEach(cellContent => {
@@ -428,14 +423,12 @@ const ManagerHistory = () => {
         totalSessions: filteredData.length,
         completedSessions: filteredData.filter(s => s.status === 'ENDED').length,
         ongoingSessions: filteredData.filter(s => s.status === 'ONGOING').length,
-        totalDuration: Math.floor(
-            filteredData.reduce((sum, s) => {
-                if (s.endTime) {
-                    return sum + (new Date(s.endTime) - new Date(s.startTime)) / 1000;
-                }
-                return sum;
-            }, 0) / 60
-        ),
+        totalDuration: filteredData.reduce((sum, s) => {
+            if (s.endTime) {
+                return sum + (new Date(s.endTime) - new Date(s.startTime)) / 1000;
+            }
+            return sum;
+        }, 0),
         violationCount: filteredData.filter(s => s.violationDuration).length,
         totalViolationTime: filteredData.reduce((sum, s) => sum + (s.violationDuration || 0), 0),
         averageDuration: Math.floor(
@@ -444,7 +437,7 @@ const ManagerHistory = () => {
                     return sum + (new Date(s.endTime) - new Date(s.startTime)) / 1000;
                 }
                 return sum;
-            }, 0) / (filteredData.filter(s => s.endTime).length || 1) / 60
+            }, 0) / (filteredData.filter(s => s.endTime).length || 1)
         ),
     };
 
@@ -477,7 +470,7 @@ const ManagerHistory = () => {
         }
         acc[typeId].count++;
         if (session.endTime) {
-            acc[typeId].totalDuration += (new Date(session.endTime) - new Date(session.startTime)) / 1000 / 60;
+            acc[typeId].totalDuration += (new Date(session.endTime) - new Date(session.startTime)) / 1000;
         }
         return acc;
     }, {});
@@ -511,7 +504,7 @@ const ManagerHistory = () => {
                 </div>
                 <div className="stat-card bg-gray-50 p-6 rounded-lg shadow-lg border-t-4 border-gray-500">
                     <div className="stat-card-label">Total Duration</div>
-                    <div className="stat-card-value text-2xl">{formatMinutesToHM(stats.totalDuration)}</div>
+                    <div className="stat-card-value text-2xl">{formatDurationHMS(stats.totalDuration)}</div>
                 </div>
             </div>
 
@@ -707,7 +700,7 @@ const ManagerHistory = () => {
                                         <div className="flex justify-between items-center">
                                             <span className="text-gray-600">Total Violation:</span>
                                             <span className="badge badge-warning">
-                                                {formatViolationDuration(stats.totalViolationTime)}
+                                                {formatDurationHMS(stats.totalViolationTime)}
                                             </span>
                                         </div>
                                     </div>
@@ -737,13 +730,13 @@ const ManagerHistory = () => {
                                         <div className="flex justify-between items-center">
                                             <span className="text-gray-600">Total Duration:</span>
                                             <span className="font-semibold text-gray-900">
-                                                {formatMinutesToHM(Math.floor(stats.totalDuration))}
+                                                {formatDurationHMS(Math.floor(stats.totalDuration))}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-gray-600">Average:</span>
                                             <span className="font-semibold text-gray-900">
-                                                {formatMinutesToHM(Math.floor(stats.totalDuration / stats.count))}
+                                                {formatDurationHMS(Math.floor(stats.totalDuration / stats.count))}
                                             </span>
                                         </div>
                                     </div>
@@ -810,7 +803,7 @@ const ManagerHistory = () => {
                                             <td className="p-4">
                                                 {session.violationDuration ? (
                                                     <span className="bg-red-100 text-red-800 p-1 rounded px-3">
-                                                        +{formatViolationDuration(session.violationDuration)}
+                                                        +{formatDurationHMS(session.violationDuration)}
                                                     </span>
                                                 ) : (
                                                     <span className="font-semibold text-gray-900">-</span>
@@ -848,7 +841,7 @@ const ManagerHistory = () => {
                                                         <div className="bg-gray-50 p-6 rounded-lg shadow border-l-4 border-indigo-700">
                                                             <p className="text-xs text-gray-600 font-bold uppercase mb-1">Expected Duration</p>
                                                             <p className="font-bold text-gray-900 text-lg">
-                                                                {formatMinutesToHM(Math.floor(session.breakType?.duration / 60))}
+                                                                {formatDurationHMS(session.breakType?.duration)}
                                                             </p>
                                                         </div>
                                                         <div className="bg-gray-50 p-6 rounded-lg shadow border-l-4 border-amber-900">
@@ -861,7 +854,7 @@ const ManagerHistory = () => {
                                                             <p className="text-xs text-gray-600 font-bold uppercase mb-1">Status</p>
                                                             <p className={`font-bold text-lg ${session.violationDuration ? 'text-red-600' : !session.endTime ? 'text-blue-600' : 'text-green-600'}`}>
                                                                 {session.violationDuration
-                                                                    ? ` +${formatViolationDuration(session.violationDuration)} (Violation)`
+                                                                    ? ` +${formatDurationHMS(session.violationDuration)} (Violation)`
                                                                     : !session.endTime
                                                                         ? 'Ongoing'
                                                                         : 'On Time'}
@@ -892,7 +885,7 @@ const ManagerHistory = () => {
                     </div>
                     <div>
                         <p className="text-xs text-gray-600 font-bold uppercase mb-1">Average Session</p>
-                        <p className="text-2xl font-bold text-purple-700">{formatMinutesToHM(stats.averageDuration)}</p>
+                        <p className="text-2xl font-bold text-purple-700">{formatDurationHMS(stats.averageDuration)}</p>
                     </div>
                 </div>
             </div>

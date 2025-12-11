@@ -58,6 +58,19 @@ const AgentHistory = () => {
         return filtered;
     };
 
+    const formatDurationHMS = (seconds) => {
+        if (!seconds || seconds <= 0) return '0s';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+
+        const parts = [];
+        if (h > 0) parts.push(`${h}h`);
+        if (m > 0) parts.push(`${m}m`);
+        if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+        return parts.join(' ');
+    };
+
     const calculateDuration = (startTime, endTime) => {
         if (!endTime || !startTime) return '-';
         const start = new Date(startTime);
@@ -68,9 +81,7 @@ const AgentHistory = () => {
         const diff = Math.floor((end - start) / 1000); // in seconds
         if (diff < 0) return '-';
 
-        const mins = Math.floor(diff / 60);
-        const secs = diff % 60;
-        return `${mins}m ${secs}s`;
+        return formatDurationHMS(diff);
     };
 
     const formatDateTime = (dateString) => {
@@ -203,22 +214,21 @@ const AgentHistory = () => {
                             <div>
                                 <p className="text-gray-600 text-sm">Total Duration</p>
                                 <p className="text-2xl font-bold text-blue-900 mt-1">
-                                    {Math.floor(
+                                    {formatDurationHMS(Math.floor(
                                         filteredData.reduce((sum, session) => {
                                             if (session.endTime) {
                                                 const diff = new Date(session.endTime) - new Date(session.startTime);
                                                 return sum + diff / 1000;
                                             }
                                             return sum;
-                                        }, 0) / 60
-                                    )}{' '}
-                                    m
+                                        }, 0)
+                                    ))}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-600 text-sm">Avg Duration</p>
                                 <p className="text-2xl font-bold text-blue-900 mt-1">
-                                    {Math.floor(
+                                    {formatDurationHMS(Math.floor(
                                         filteredData.reduce((sum, session) => {
                                             if (session.endTime) {
                                                 const diff = new Date(session.endTime) - new Date(session.startTime);
@@ -226,19 +236,16 @@ const AgentHistory = () => {
                                             }
                                             return sum;
                                         }, 0) /
-                                        (filteredData.filter(s => s.endTime).length || 1) /
-                                        60
-                                    )}{' '}
-                                    m
+                                        (filteredData.filter(s => s.endTime).length || 1)
+                                    ))}
                                 </p>
                             </div>
                             <div>
                                 <p className="text-gray-600 text-sm">Total Violations</p>
                                 <p className="text-2xl font-bold text-red-900 mt-1">
-                                    {Math.floor(
-                                        filteredData.reduce((sum, session) => sum + (session.violationDuration || 0), 0) / 60
-                                    )}{' '}
-                                    m
+                                    {formatDurationHMS(Math.floor(
+                                        filteredData.reduce((sum, session) => sum + (session.violationDuration || 0), 0)
+                                    ))}
                                 </p>
                             </div>
                             <div>
@@ -329,8 +336,7 @@ const AgentHistory = () => {
                                             <td className="px-6 py-4 text-sm whitespace-nowrap">
                                                 {session.violationDuration ? (
                                                     <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                                        +{Math.floor(session.violationDuration / 60)}m{' '}
-                                                        {session.violationDuration % 60}s
+                                                        +{formatDurationHMS(session.violationDuration)}
                                                     </span>
                                                 ) : (
                                                     <span className="text-gray-400">-</span>

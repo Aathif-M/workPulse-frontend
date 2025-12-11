@@ -40,6 +40,19 @@ const ManagerBreaks = () => {
         }
     };
 
+    const formatDurationHMS = (seconds) => {
+        if (!seconds || seconds <= 0) return '0s';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+
+        const parts = [];
+        if (h > 0) parts.push(`${h}h`);
+        if (m > 0) parts.push(`${m}m`);
+        if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+        return parts.join(' ');
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -156,7 +169,7 @@ const ManagerBreaks = () => {
                                 <tr key={bt.id} className="border-b last:border-0 hover:bg-gray-50">
                                     <td className="p-4 font-medium">{bt.name}</td>
                                     <td className="p-4 text-gray-600">
-                                        {Math.floor(bt.duration / 60)}:{(bt.duration % 60).toString().padStart(2, '0')}
+                                        {formatDurationHMS(bt.duration)}
                                     </td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded text-xs font-medium ${bt.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

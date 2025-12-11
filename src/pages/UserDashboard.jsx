@@ -62,6 +62,19 @@ const UserDashboard = () => {
         }
     };
 
+    const formatDurationHMS = (seconds) => {
+        if (!seconds || seconds <= 0) return '0s';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = Math.floor(seconds % 60);
+
+        const parts = [];
+        if (h > 0) parts.push(`${h}h`);
+        if (m > 0) parts.push(`${m}m`);
+        if (s > 0 || parts.length === 0) parts.push(`${s}s`);
+        return parts.join(' ');
+    };
+
     const endBreak = async () => {
         const previousSession = currentSession;
         setCurrentSession(null); // Optimistic update
@@ -185,7 +198,7 @@ const UserDashboard = () => {
 
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                                            {Math.floor(type.duration / 60)} mins
+                                                            {formatDurationHMS(type.duration)}
                                                         </span>
                                                     </div>
 
@@ -225,7 +238,7 @@ const UserDashboard = () => {
                                                     </span>
                                                 </td>
                                                 <td className="py-3 px-2 text-red-500 whitespace-nowrap">
-                                                    {session.violationDuration ? `+${Math.floor(session.violationDuration / 60)}m ${session.violationDuration % 60}s` : '-'}
+                                                    {session.violationDuration ? `+${formatDurationHMS(session.violationDuration)}` : '-'}
                                                 </td>
                                             </tr>
                                         ))}
