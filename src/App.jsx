@@ -9,6 +9,8 @@ import ManagerAgents from './pages/ManagerAgents';
 import ManagerBreaks from './pages/ManagerBreaks';
 import ManagerHistory from './pages/ManagerHistory';
 import LoadingComponent from './components/LoadingComponent';
+import AutoLogoutHandler from './components/AutoLogoutHandler';
+
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -27,7 +29,9 @@ function App() {
     <AuthProvider>
       <SocketProvider>
         <Router>
+          <AutoLogoutHandler />
           <Routes>
+
             <Route path="/login" element={<Login />} />
             <Route
               path="/dashboard"
