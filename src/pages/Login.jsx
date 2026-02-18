@@ -37,7 +37,6 @@ const Login = () => {
                         alt="WorkPulse Logo"
                         className="w-1/2"
                     />
-                    <h2 className="text-4xl font-bold mb-12 text-gray-800">Work Pulse</h2>
 
                     {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
 
