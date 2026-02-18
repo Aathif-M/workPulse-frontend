@@ -35,7 +35,7 @@ const Login = () => {
                     <img
                         src={workpulseLogo}
                         alt="WorkPulse Logo"
-                        className="w-1/2"
+                        className="w-1/2 mx-auto"
                     />
 
                     {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
