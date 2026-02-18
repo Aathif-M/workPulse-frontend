@@ -34,7 +34,7 @@ const Login = () => {
                 <div className="w-full max-w-md mx-auto">
                     <img
                         src={workpulseLogo}
-                        alt="Login Cover"
+                        alt="WorkPulse Logo"
                         className="w-1/2"
                     />
                     <h2 className="text-4xl font-bold mb-12 text-gray-800">Work Pulse</h2>
