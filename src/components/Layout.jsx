@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import metaLogoWhite from '../assets/meta-logo-white.png';
+import logoLight from '../assets/logo-light.png';
 
 const Layout = ({ children, navLinks }) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -36,8 +36,7 @@ const Layout = ({ children, navLinks }) => {
                 md:translate-x-0
             `}>
                 <div className="pb-6 mb-3 hidden md:block border-b border-blue-800">
-                    <img src={metaLogoWhite} alt="WorkPulse Logo" className="h-16 mb-0" />
-                    <h1 className="text-2xl font-bold">WorkPulse</h1>
+                    <img src={logoLight} alt="WorkPulse Logo" className="h-16 mb-0" />
                 </div>
 
                 {/* Mobile Header Spacer */}
