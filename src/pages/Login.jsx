@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock } from 'lucide-react';
 import loginPlaceholder from '../assets/login_placeholder.png';
-import metaLogoBlack from '../assets/meta-logo-black.png';
+import workpulseLogo from '../assets/logo-dark.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -33,7 +33,7 @@ const Login = () => {
             <div className="w-full md:w-2/5 flex flex-col justify-center px-8 md:px-16 lg:px-24 bg-white">
                 <div className="w-full max-w-md mx-auto">
                     <img
-                        src={metaLogoBlack}
+                        src={workpulseLogo}
                         alt="Login Cover"
                         className="w-1/2"
                     />
