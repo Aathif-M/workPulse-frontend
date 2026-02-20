@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, Lock } from 'lucide-react';
 import loginPlaceholder from '../assets/login_placeholder.png';
 import metaLogoBlack from '../assets/meta-logo-black.png';
-import workPulseLogo from '../assets/logo-light.png'
+import workPulseLogo from '../assets/logo-dark.png'
 
 const Login = () => {
     const [email, setEmail] = useState('');
