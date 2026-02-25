@@ -14,11 +14,4 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// api.interceptors.response.use(async (response) => {
-//     await new Promise(resolve => setTimeout(resolve, 300));
-//     return response;
-// }, (error) => {
-//     return Promise.reject(error);
-// });
-
 export default api;
